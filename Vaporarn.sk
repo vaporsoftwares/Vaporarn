@@ -1,0 +1,142 @@
+variables:
+	{vaporarn.permission} = "vaporarn.warn" # Default permission. Can be changed with //warnconfig
+	{vaporarn.warns.%player%} = "0" # Default number of warns per players
+	{vaporarn.reasons.%player%} = "" # Please leave this blank, else players will have a warning with that name
+	{vaporarn.permission.config} = "vaporarn.*" # Default permission to use //warnconfig
+
+# Messages are customisable after the : but, do not change the name of the options (if you have no idea what you are doing)
+options:
+	prefix:&e&lWARNING &8»
+	pmessage: &e&lWARNING &8» &7You need &e&lSUPER PLAYER &7or greater to use this command !
+	warn.arg1notset: &e&lWARNING &8» &7Last time i bought minecraft that name was not allowed. Just me ?
+	warn.arg1set.notonline: &e&lWARNING &8» &7Hmm, i can't find that player, is he/she online ?
+	warn.arg1set.arg2notset: &e&lWARNING &8» &7Hmm, seems you cant warn someone for nothing. 
+
+	warns.arg1notset: &e&lWARNING &8» &7Yeah, last time i bought Minecraft, that name was still not allowed, Just me again ?
+
+	warning.arg1notset: &e&lWARNING &8» &7Cant you believe it, when i tried to get a new minecraft account with that name, they refused!
+	warning.resetwarns.arg2notset: &e&lWARNING &8» &7OMG, Mojang still wont let me use that username. AGAIN?
+	warning.arg1notcorrect: &e&lWARNING &8» &7Hmm. i dont think thats an option ?
+	warning.syntax: &e&lWARNING &8» &e&le.g; &7&o//&awarnconfig &8<&cpermission&8/&cconfig&8/&cresetwarns&8> &8[&cstring&8]
+	warning.permission.arg2notset: &e&lWARNING &8» &7Hmm, seems like that argument is invalid, sorry mate
+	warning.config.arg2notset: &e&lWARNING &8» &7Hmmm, seems like your string cant be sent to the server, soz m8
+
+command /warn [<offline player>] [<text>]:
+	permission: "%{vaporarn.permission}%"
+	permission message: {@pmessage}
+	trigger:
+		if arg 1 is not set:
+			send "{@warn.arg1notset}"
+			stop 
+
+		if arg 1 is set:
+			if arg 1 is not online:
+				if arg 2 is not set:
+					send "{@warn.arg1set.notonline}"
+					stop 
+
+		if arg 1 is set:
+			if arg 1 is online:
+				if arg 2 is not set:
+					send "{@warn.arg1set.arg2notset}"
+					stop 
+
+		if arg 1 is set:
+			if arg 1 is online:
+				if arg 2 is set:
+					send "&e&lWARNING &8» &7You warned %arg 1% for %arg 2%"
+					broadcast "&e&lWARNING &8» &c%arg 1% &7has been warned by %sender% for the reason; &e%arg 2%"
+					add 1 to {vaporarn.warns.%arg 1%}
+					add "&8● &7%arg 2% &8▏ &7%sender%" to {vaporarn.reasons.%arg 1%}
+					stop 
+
+command /warns [<offline player>]:
+	permission: "%{vaporarn.permission}%"
+	permission message: {@pmessage}
+	trigger:
+		if arg 1 is not set:
+			send "{@warns.arg1notset}"
+			stop 
+
+		if arg 1 is set:
+			send "&e&lWARNING &8» &7That player has &c%{vaporarn.warns.%arg 1%}% &7warnings"
+			stop 
+
+command //warn [<offline player>]:
+	permission: "%{vaporarn.permission}%"
+	permission message: {@pmessage}
+	trigger:
+		if arg 1 is not set:
+			send "{@warning.arg1notset}"
+			stop 
+
+		if arg 1 is set:
+			send "&e&lWARNING &8» &7%{vaporarn.reasons.%arg 1%}%"
+			stop 
+
+command //warnconfig [<text>] [<text>]:
+	permission: "%{vaporarn.permission.config}%"
+	permission message: {@pmessage}
+	trigger:
+		if arg 1 is not set:
+			send "&e&lWARNING ▏ &7By Vapor (iMPDevMC)"
+			send "&8➟ &7Options"
+			send "&8● &7permission &8▏ &7STRING"
+			send "&8● &7config &8▏ STRING"
+			send "&8● &7resetwarns &8▏ &7USERNAME"
+			send ""
+			send "&f&l➟ &ee.g; &7&o//warnconfig permission mycustom.permission"
+			stop 
+
+		if arg 1 is set:
+			if arg 1 is not "permission" or "config" or "resetwarns":
+				send "{@warning.arg1notcorrect}"
+
+		if arg 1 is set:
+			if arg 1 is "resetwarns":
+				if arg 2 is not set:
+					send "{@warning.resetwarns.arg2notset}"
+					stop 
+
+		if arg 1 is set:
+			if arg 1 is "resetwarns":
+				if arg 2 is set:
+					send "&e&lWARNING &8» &7You reset %arg 2%'s warnings"
+					set {vaporarn.warns.%arg 2%}
+					clear {vaporarn.reasons.%arg 2%}
+					loop all players:
+						if loop-player has permission "%{vaporarn.permission.config}%":
+							send "&c&lWARNING &8» &7%sender% has reset the warnings of player %arg 2%" to loop-player
+							stop 
+
+		if arg 1 is set:
+			if arg 1 is "permission":
+				if arg 2 is not set:
+					send "{@warning.permission.arg2notset}"
+					stop 
+
+		if arg 1 is set:
+			if arg 1 is "permission":
+				if arg 2 is set:
+					send "&e&lWARNING &8» &7Okay mate, the permission has been changed to &7%arg 2%"
+					set {vaporarn.permission} to "%arg 2%"
+					loop all players:
+						if loop-player has permission "%{vaporarn.permission.config}%":
+							send "&c&lWARNING &8» &a%sender% changed option permission to &c%arg 2%" to loop-player
+							stop 
+
+		if arg 1 is set:
+			if arg 1 is "config":
+				if arg 2 is not set:
+					send "{@warning.config.arg2notset}"
+					stop 
+
+		if arg 1 is set:
+			if arg 1 is "config":
+				if arg 2 is set:
+					send "&e&lWARNING &8» &7Alright, option config has been changed to &c%arg 2%"
+					set {vaporarn.permission.config} to "%arg 2%"
+					loop all players:
+						if loop-player is op:
+							send "&c&lWARNING &8» &a%sender% &7changed option config to %arg 2%" to loop-player
+							stop 
